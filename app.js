@@ -60,14 +60,14 @@ app.webhooks.on('pull_request', async ({ octokit, payload }) => {
         owner: payload.repository.owner.login,
         repo: payload.repository.name,
         issue_number: payload.pull_request.number,
-        body: messageForSignedCommits
+        body: msgForUnsignedCommits
       })
     } else {
       await octokit.rest.issues.createComment({
         owner: payload.repository.owner.login,
         repo: payload.repository.name,
         issue_number: payload.pull_request.number,
-        body: messageForNewPRs
+        body: messageForSignedCommits
       })
     }
 
