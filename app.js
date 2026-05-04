@@ -72,6 +72,7 @@ const handler = async ({ octokit, payload }) => {
 
 app.webhooks.on('pull_request.opened', handler)
 app.webhooks.on('pull_request.review_requested', handler)
+app.webhooks.on('pull_request.synchronize', handler)
 
 // Subscribe to the "pull_request.opened" webhook event
 // app.webhooks.on('pull_request.synchronize', async ({ octokit, payload }) => {
