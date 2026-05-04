@@ -15,7 +15,7 @@ const secret = process.env.WEBHOOK_SECRET
 const enterpriseHostname = process.env.ENTERPRISE_HOSTNAME
 const messageForNewPRs = fs.readFileSync('./message.md', 'utf8')
 const messageForSignedCommits = fs.readFileSync('./signedCommit.md', 'utf-8');
-
+const msgForUnsignedCommits = fs.readFileSync('./unsignedCommit.md', 'utf-8');
 // Create an authenticated Octokit client authenticated as a GitHub App
 const app = new App({
   appId,
@@ -51,6 +51,9 @@ app.webhooks.on('pull_request', async ({ octokit, payload }) => {
     const hasUnsigned = commits.data.some(
       (c) => !c.commit.verification.verified
     )
+
+    console.log("sign check");
+    console.log(hasUnsigned);
 
     if (hasUnsigned) {
       await octokit.rest.issues.createComment({
