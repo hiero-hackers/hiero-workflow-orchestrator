@@ -13,9 +13,9 @@ const privateKeyPath = process.env.PRIVATE_KEY_PATH
 const privateKey = fs.readFileSync(privateKeyPath, 'utf8')
 const secret = process.env.WEBHOOK_SECRET
 const enterpriseHostname = process.env.ENTERPRISE_HOSTNAME
-const messageForNewPRs = fs.readFileSync('./message.md', 'utf8')
-const messageForSignedCommits = fs.readFileSync('./signedCommit.md', 'utf-8');
-const msgForUnsignedCommits = fs.readFileSync('./unsignedCommit.md', 'utf-8');
+// const messageForNewPRs = fs.readFileSync('./message.md', 'utf8')
+const messageForSignedCommits = fs.readFileSync('./signedCommit.md', 'utf-8')
+const msgForUnsignedCommits = fs.readFileSync('./unsignedCommit.md', 'utf-8')
 // Create an authenticated Octokit client authenticated as a GitHub App
 const app = new App({
   appId,
@@ -39,9 +39,8 @@ app.octokit.log.debug(`Authenticated as '${data.name}'`)
 // Subscribe to the "pull_request.opened" webhook event
 app.webhooks.on('pull_request', async ({ octokit, payload }) => {
   console.log(`Received a pull request event for #${payload.pull_request.number}`)
-  console.log(`working!!`)
   try {
-    // check commit is signed or not 
+    // check commit is signed or not
     const commits = await octokit.rest.pulls.listCommits({
       owner: payload.repository.owner.login,
       repo: payload.repository.name,
@@ -52,8 +51,7 @@ app.webhooks.on('pull_request', async ({ octokit, payload }) => {
       (c) => !c.commit.verification.verified
     )
 
-    console.log("sign check");
-    console.log(hasUnsigned);
+    console.log(hasUnsigned)
 
     if (hasUnsigned) {
       await octokit.rest.issues.createComment({
