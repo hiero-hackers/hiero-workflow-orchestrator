@@ -39,7 +39,9 @@ app.octokit.log.debug(`Authenticated as '${data.name}'`)
 
 const handler = async ({ octokit, payload }) => {
   console.log(`PR #${payload.pull_request.number}`)
-
+  
+  console.log('EVENT TRIGGERED:', payload.action)
+  
   try {
     const commits = await octokit.rest.pulls.listCommits({
       owner: payload.repository.owner.login,
@@ -69,7 +71,7 @@ const handler = async ({ octokit, payload }) => {
 }
 
 app.webhooks.on('pull_request.opened', handler)
-app.webhooks.on('pull_request.synchronize', handler)
+app.webhooks.on('pull_request.review_requested', handler)
 
 // Subscribe to the "pull_request.opened" webhook event
 // app.webhooks.on('pull_request.synchronize', async ({ octokit, payload }) => {
