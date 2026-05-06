@@ -51,7 +51,7 @@ app.webhooks.on('pull_request', async ({ octokit, payload }) => {
     const configFile = await octokit.rest.repos.getContent({
       owner: payload.repository.owner.login,
       repo: payload.repository.name,
-      path: '.github /config.yaml'
+      path: '.github/config.yaml'
     })
 
     const configContent = Buffer
