@@ -17,6 +17,8 @@ const enterpriseHostname = process.env.ENTERPRISE_HOSTNAME
 // const messageForNewPRs = fs.readFileSync('./message.md', 'utf8')
 const messageForSignedCommits = fs.readFileSync('./signedCommit.md', 'utf-8')
 const msgForUnsignedCommits = fs.readFileSync('./unsignedCommit.md', 'utf-8')
+const msgForDisableSign = fs.readFileSync('./disableSign.md', 'utf-8')
+
 // Create an authenticated Octokit client authenticated as a GitHub App
 const app = new App({
   appId,
@@ -89,7 +91,12 @@ app.webhooks.on('pull_request', async ({ octokit, payload }) => {
       }
       console.log('running signned checks');
     } else {
-      console.log('not running siggned checks');
+      await octokit.rest.issues.createComment({
+          owner: payload.repository.owner.login,
+          repo: payload.repository.name,
+          issue_number: payload.pull_request.number,
+          body: msgForDisableSign
+        })
     }
 
 
