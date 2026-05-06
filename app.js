@@ -45,8 +45,8 @@ app.webhooks.on('pull_request', async ({ octokit, payload }) => {
   try {
     // check commit is signed or not
     // Read config file from target repository
-    console.log(payload.repository.owner.login);
-    console.log(payload.repository.name);
+    console.log(payload.repository.owner.login)
+    console.log(payload.repository.name)
     // Note: .github/config.yaml is read from the main(default branch not the current branch ie test-1)
     const configFile = await octokit.rest.repos.getContent({
       owner: payload.repository.owner.login,
@@ -59,8 +59,8 @@ app.webhooks.on('pull_request', async ({ octokit, payload }) => {
       .toString('utf8')
 
     const parsedConfig = yaml.load(configContent)
-    
-    if(parsedConfig.automation.require_sign_commit == true){
+
+    if (parsedConfig.automation.require_sign_commit === true) {
       // Fetch PR commits
       const commits = await octokit.rest.pulls.listCommits({
         owner: payload.repository.owner.login,
@@ -89,16 +89,15 @@ app.webhooks.on('pull_request', async ({ octokit, payload }) => {
           body: messageForSignedCommits
         })
       }
-      console.log('running signned checks');
+      console.log('running signned checks')
     } else {
       await octokit.rest.issues.createComment({
-          owner: payload.repository.owner.login,
-          repo: payload.repository.name,
-          issue_number: payload.pull_request.number,
-          body: msgForDisableSign
-        })
+        owner: payload.repository.owner.login,
+        repo: payload.repository.name,
+        issue_number: payload.pull_request.number,
+        body: msgForDisableSign
+      })
     }
-
 
     // await octokit.rest.issues.createComment({
     //   owner: payload.repository.owner.login,
