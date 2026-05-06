@@ -3,6 +3,7 @@ import fs from 'fs'
 import http from 'http'
 import { Octokit, App } from 'octokit'
 import { createNodeMiddleware } from '@octokit/webhooks'
+import yaml from 'js-yaml'
 
 // Load environment variables from .env file
 dotenv.config()
@@ -41,33 +42,56 @@ app.webhooks.on('pull_request', async ({ octokit, payload }) => {
   console.log(`Received a pull request event for #${payload.pull_request.number}`)
   try {
     // check commit is signed or not
-    const commits = await octokit.rest.pulls.listCommits({
+    // Read config file from target repository
+    console.log(payload.repository.owner.login);
+    console.log(payload.repository.name);
+    // Note: .github/config.yaml is read from the main(default branch not the current branch ie test-1)
+    const configFile = await octokit.rest.repos.getContent({
       owner: payload.repository.owner.login,
       repo: payload.repository.name,
-      pull_number: payload.pull_request.number
+      path: '.github /config.yaml'
     })
 
-    const hasUnsigned = commits.data.some(
-      (c) => !c.commit.verification.verified
-    )
+    const configContent = Buffer
+      .from(configFile.data.content, 'base64')
+      .toString('utf8')
 
-    console.log(hasUnsigned)
-
-    if (hasUnsigned) {
-      await octokit.rest.issues.createComment({
+    const parsedConfig = yaml.load(configContent)
+    
+    if(parsedConfig.automation.require_sign_commit == true){
+      // Fetch PR commits
+      const commits = await octokit.rest.pulls.listCommits({
         owner: payload.repository.owner.login,
         repo: payload.repository.name,
-        issue_number: payload.pull_request.number,
-        body: msgForUnsignedCommits
+        pull_number: payload.pull_request.number
       })
+
+      const hasUnsigned = commits.data.some(
+        (c) => !c.commit.verification.verified
+      )
+
+      console.log(hasUnsigned)
+
+      if (hasUnsigned) {
+        await octokit.rest.issues.createComment({
+          owner: payload.repository.owner.login,
+          repo: payload.repository.name,
+          issue_number: payload.pull_request.number,
+          body: msgForUnsignedCommits
+        })
+      } else {
+        await octokit.rest.issues.createComment({
+          owner: payload.repository.owner.login,
+          repo: payload.repository.name,
+          issue_number: payload.pull_request.number,
+          body: messageForSignedCommits
+        })
+      }
+      console.log('running signned checks');
     } else {
-      await octokit.rest.issues.createComment({
-        owner: payload.repository.owner.login,
-        repo: payload.repository.name,
-        issue_number: payload.pull_request.number,
-        body: messageForSignedCommits
-      })
+      console.log('not running siggned checks');
     }
+
 
     // await octokit.rest.issues.createComment({
     //   owner: payload.repository.owner.login,
